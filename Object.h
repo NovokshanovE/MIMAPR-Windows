@@ -16,29 +16,21 @@ using namespace Eigen;
 using namespace std;
 ///usr/include/eigen3
 
-
-
-
-
-
-
-
-
 class Object {
 private:
-	int H = 400, W = 500;
-	int S = 100;
-	int R1 = 50, R2 = 150;
-	int H_s, W_s;
+	int h = 400, w = 500;
+	int s = 100;
+	int r1 = 50, r2 = 150;
+	int h_s, w_s;
 	Hole* hole;
 	int step = 10;
-	ArrayXXf grid;
-	vector< vector < vector <Point>> > tempGrid;
-	vector< pair <char, int> > boundary—onditions;
+	//ArrayXXf grid;
+	vector< vector < vector <Point>> > temp_grid_;
+	vector< pair <char, int> > boundary_conditions_;
 public:
 	Object(int v, double p1, double p2);
-	void print();
-	void completion_grid();
-	void completion_temp_grid();
+	void PrintGrid();
+	void CompletionGrid();
+	void CompletionTempGrid();
 
 };

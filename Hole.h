@@ -1,14 +1,14 @@
 #pragma once
 class Hole {
 private:
-	double X, Y;
+	double x, y;
 	bool variant;
 public:
 	Hole(double X, double Y);
-	double getX();
-	double getY();
-	bool getVariant();
-	void print();
-	void set_var(bool variant);
+	double GetX();
+	double GetY();
+	bool GetVariant();
+	void Print();
+	void SetVariant(bool variant);
 };
 

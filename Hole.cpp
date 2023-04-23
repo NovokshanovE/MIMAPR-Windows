@@ -2,22 +2,22 @@
 #include <iostream>
 using namespace std;
 
-Hole::Hole(double X, double Y) {
-	this->X = X;
-	this->Y = Y;
+Hole::Hole(double x, double y) {
+	this->x = x;
+	this->y = y;
 }
-double Hole::getX() {
-	return X;
+double Hole::GetX() {
+	return x;
 }
-double Hole::getY() {
-	return Y;
+double Hole::GetY() {
+	return y;
 }
-bool Hole::getVariant() {
+bool Hole::GetVariant() {
 	return variant;
 }
-void Hole::print() {
-	cout << variant << ":" << X << " " << Y << endl;
+void Hole::Print() {
+	cout << variant << ":" << x << " " << y << endl;
 }
-void Hole::set_var(bool variant) {
+void Hole::SetVariant(bool variant) {
 	this->variant = variant;
 }

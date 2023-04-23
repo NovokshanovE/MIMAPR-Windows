@@ -8,8 +8,8 @@ int main()
 	int p1, p2;
 	cin >> p1 >> p2;
  	Object* body = new Object(variant, p1, p2);
-	body->print();
+	body->PrintGrid();
 	//ArrayXXf
-	int in_put;
+	//int in_put;
 	//cin >> in_put;
 }
