@@ -11,62 +11,67 @@ Object::Object(int v, double p1, double p2) {
 	//CompletionTempGrid();
 }
 
-void Object::PrintGrid() {
+void Object::PrintGrid(int k) {
 	hole->Print();
-	//cout << grid << endl;
+	for (int i = 0; i < h_s; i++) {
+		cout << endl;
+		for (int j = 0; j < w_s; j++)
+			cout << ' ' << temp_grid_[k][i][j].GetInternal();
+	}
+		
+
+		
+	
 }
 
+
 void Object::CompletionGrid() {
+	vector< vector <Point>> new_grid;
+	//new_grid.reserve(h_s);
+	
+	for (int i = 0; i < h_s; i++) {
+		vector <Point> new_string;
+		//new_string.reserve(w_s);
+
+		for (int j = 0; j < w_s; j++) {
+			Point node(j * step, i * step);
+			if (j * step >= 0 and i * step >= 0 and j * step <= w and i * step <= h) {
+				
+				if (hole->GetVariant()) {
+					if ((j * step > (w - r2)) and (i * step > (h - r2)) and (pow((j * step - w + r2), 2) + pow((i * step - h + r2), 2) > pow(r2, 2)))
+
+						node.SetInternal(false);
+					else
+						if (j * step < hole->GetX() + s / 2 and (j * step > hole->GetX() - s / 2) and i * step < hole->GetY() + s / 2 and (i * step > hole->GetY() - s / 2))
+							node.SetInternal(false);
+						else
+							node.SetInternal(true);
+				}
+				else {
+					if ((pow((j * step - hole->GetX()), 2) + pow((i * step - hole->GetY()), 2)) < pow(r1, 2))
+						node.SetInternal(false);
+					else
+						if (j * step > (w - r2) and i * step > (h - r2) and (pow((j * step - w + r2), 2) + pow((i * step - h + r2), 2)) > pow(r2, 2))
+							node.SetInternal(false);
+						else
+							node.SetInternal(true);
+				}
+			}
+			else
+				node.SetInternal(false);
+
+			new_string.push_back(node);
+		}
+		new_grid.push_back(new_string);
+	}
+	temp_grid_.push_back(new_grid);
 	//grid = ArrayXXf::Zero(h_s + 0, w_s + 0);
 	////temp_grid = ArrayXXXf::Zero(H / step + 1, w / step + 1, 1);
 	//for (int y = 0; y < h_s; y++) {
 	//	for (int x = 0; x < w_s; x++) {
-	//		if (x * step >= 0 and y * step >= 0 and x * step <= w and y * step <= H) {
-	//			if (hole->getVariant()) {
-	//				if ((x * step > (W - R2)) and (y * step > (H - R2)) and (pow((x * step - w + R2), 2) + pow((y * step - h + R2), 2) > pow(R2, 2)))
-
-	//					grid(y, x) = 0;
-	//				else
-	//					if (x * step < hole->getX() + S / 2 and (x * step > hole->getX() - S / 2) and y * step < hole->getY() + S / 2 and (y * step > hole->getY() - S / 2))
-	//						grid(y, x) = 0;
-	//					else
-	//						grid(y, x) = 1;
-	//			}
-	//			else {
-	//				if ((pow((x * step - hole->getX()), 2) + pow((y * step - hole->getY()), 2)) < pow(R1, 2))
-	//					grid(y, x) = 0;
-	//				else
-	//					if (x * step > w - R2 and y * step > h - R2 and (pow((x * step - w + R2), 2) + pow((y * step - h + R2), 2)) > pow(R2, 2))
-	//						grid(y, x) = 0;
-	//					else
-	//						grid(y, x) = 1;
-	//			}
-	//		}
-	//		else
-	//			grid(y, x) = 0;
+	//		
 	//	}
 	//}
 	//cout << grid(0, 0) << endl;
-
-}
-void Object::CompletionTempGrid() {
-
-	//for (int i = 0; i < h_s; i++) {
-	//	for (int j = 0; j < w_s; j++) {
-	//		if (grid(i, j)) {
-	//			if (j == 0) {
-	//				//new_temp(i, j) = 100;
-
-	//			}
-	//			else if (j == w_s - 1) {
-
-
-	//			}
-	//		}
-	//	}
-	//}
-	////temp_grid.push_back();
-
-
 
 }

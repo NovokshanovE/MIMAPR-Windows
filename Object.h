@@ -29,8 +29,8 @@ private:
 	vector< pair <char, int> > boundary_conditions_;
 public:
 	Object(int v, double p1, double p2);
-	void PrintGrid();
+	void PrintGrid(int k);
 	void CompletionGrid();
-	void CompletionTempGrid();
+	//void CompletionTempGrid();
 
 };
