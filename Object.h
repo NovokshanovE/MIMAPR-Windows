@@ -8,8 +8,9 @@
 #include <cmath>
 #include <vector>
 #include "Point.h"
-
-
+#include "Hole.h"
+#include "Circle.h"
+#include "Square.h"
 
 using namespace Eigen;
 using namespace std;
@@ -17,49 +18,11 @@ using namespace std;
 
 
 
-class Hole {
-private:
-	double X, Y;
-	bool variant;
-public:
-	Hole(double X, double Y) {
-		this->X = X;
-		this->Y = Y;
-	}
-	double getX() {
-		return X;
-	}
-	double getY() {
-		return Y;
-	}
-	bool getVariant() {
-		return variant;
-	}
-	void print() {
-		cout << variant << ":" << X << " " << Y << endl;
-	}
-	void set_var(bool variant) {
-		this->variant = variant;
-	}
-};
 
-class Square : public Hole {
-private:
-	double S = 100;
-public:
-	Square(double p1, double p2) : Hole(p1, p2) {
-		Hole::set_var(true);
-	}
-};
 
-class Circle : public Hole {
-private:
-	double R = 50;
-public:
-	Circle(double p1, double p2) : Hole(p1, p2) {
-		Hole::set_var(false);
-	}
-};
+
+
+
 
 class Object {
 private:

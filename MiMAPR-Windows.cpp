@@ -11,5 +11,5 @@ int main()
 	body->print();
 	//ArrayXXf
 	int in_put;
-	cin >> in_put;
+	//cin >> in_put;
 }
