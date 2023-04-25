@@ -1,12 +1,13 @@
 #include "Object.h"
 
-Object::Object(int v, double p1, double p2) {
+Object::Object(int v, double p1, double p2, int step) {
 	if (v % 2)
 		hole = new Square(p1, p2);
 	else
 		hole = new Circle(p1, p2);
 	h_s = h / step + 1;
 	w_s = w / step + 1;
+	this->step = step;
 	CompletionGrid();
 	//CompletionTempGrid();
 }
@@ -18,10 +19,6 @@ void Object::PrintGrid(int k) {
 		for (int j = 0; j < w_s; j++)
 			cout << ' ' << temp_grid_[k][i][j].GetInternal();
 	}
-		
-
-		
-	
 }
 
 

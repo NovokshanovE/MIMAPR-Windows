@@ -23,14 +23,15 @@ private:
 	int r1 = 50, r2 = 150;
 	int h_s, w_s;
 	Hole* hole;
-	int step = 10;
+	int step;
 	//ArrayXXf grid;
 	vector< vector < vector <Point>> > temp_grid_;
 	vector< pair <char, int> > boundary_conditions_;
 public:
-	Object(int v, double p1, double p2);
+	Object(int v, double p1, double p2, int step);
 	void PrintGrid(int k);
 	void CompletionGrid();
+	//void SetStep(int step);
 	//void CompletionTempGrid();
 
 };
