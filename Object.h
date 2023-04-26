@@ -24,13 +24,17 @@ private:
 	int h_s, w_s;
 	Hole* hole;
 	int step;
+	vector<int> boundary_;
 	//ArrayXXf grid;
 	vector< vector < vector <Point>> > temp_grid_;
 	vector< pair <char, int> > boundary_conditions_;
 public:
-	Object(int v, double p1, double p2, int step);
+	Object(int v, double p1, double p2, int step, vector<int> boundary);
 	void PrintGrid(int k);
 	void CompletionGrid();
+	void SetBoundary(vector<int> boundary);
+	int BoundaryInit(double x, double y);
+	Point PointOnNextStep(Point node);
 	//void SetStep(int step);
 	//void CompletionTempGrid();
 

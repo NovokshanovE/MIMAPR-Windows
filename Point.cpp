@@ -10,12 +10,14 @@ Point::Point() {
 Point::Point(double X, double Y) {
 	x = X;
 	y = Y;
+	temp = 0;
+	boundary = 0;
 	
 }
 void Point::SetInternal(bool key) {
 	this->internal = key;
 }
-void Point::SetBoundary(bool key, double mx, double my) {
+void Point::SetBoundary(int key, double mx, double my) {
 	boundary = key;
 	muX = mx;
 	muY = my;
@@ -26,7 +28,7 @@ void Point::SetTemp(double new_temp) {
 double Point::GetTemp() {
 	return temp;
 }
-bool Point::GetBoundary() {
+int Point::GetBoundary() {
 	return boundary;
 }
 
