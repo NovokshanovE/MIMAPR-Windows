@@ -26,6 +26,15 @@ void Object::PrintGrid(int k) {
 	}
 }
 
+void Object::PrintTempGrid(int k) {
+	hole->Print();
+	for (int i = 0; i < h_s; i++) {
+		cout << endl;
+		for (int j = 0; j < w_s; j++)
+			printf(" %03.3f", temp_grid_[k][i][j].GetTemp());
+	}
+}
+
 
 void Object::CompletionGrid() {
 	vector< vector <Point>> new_grid;
@@ -37,7 +46,8 @@ void Object::CompletionGrid() {
 
 		for (int j = 0; j < w_s; j++) {
 			Point node(j * step, i * step);
-			node.SetBoundary(BoundaryInit(j, i), SetMuX(j, i), SetMuY(j, i));
+			node.SetBoundary(BoundaryInit(j, i));
+			node.SetMu(SetMuX(j, i, node.GetBoundary()), SetMuY(j, i, node.GetBoundary()));
 			node.SetInternal(InternalSet(j, i));
 			
 
@@ -48,11 +58,48 @@ void Object::CompletionGrid() {
 	temp_grid_.push_back(new_grid);
 
 }
-double Object::SetMuX(int x, int y) {
+double Object::SetMuX(int x, int y, int key) {
+	double res = 0;
+	if (key) {
+		if (x != 0 and x < w_s - 1) {
+			
+			if (InternalSet(x-1, y) and InternalSet(x, y-1)) {
+				return 1;
+			}
+			else {
+				if (hole->GetVariant()) {
+					res = (abs(x * step - hole->GetX() + s) > abs(x * step - hole->GetX() - s)) ? abs(x * step - hole->GetX() - s) : abs(x * step - hole->GetX() + s);
+					return (res / step < 0.1) ? 1 : res / step;
+				}
+				else {
 
+				}
+			}
+		}
+		else
+			return 1;
+	}
 }
-double Object::SetMuY(int x, int y) {
+double Object::SetMuY(int x, int y, int key) {
+	double res = 0;
+	if (key) {
+		if (y != 0 and y != h_s - 1) {
+			if (InternalSet(x, y-1) and InternalSet(x-1, y)) {
+				return 1;
+			}
+			else {
+				if (hole->GetVariant()) {
+					res = (abs(y * step - hole->GetY() + s) > abs(y * step - hole->GetY() - s)) ? abs(y * step - hole->GetY() - s) : abs(y * step - hole->GetY() + s);
+					return (res / step < 0.1) ? 1 : res / step;
+				}
+				else {
 
+				}
+			}
+		}
+		else
+			return 1;
+	}
 }
 bool Object::InternalSet(double j, double i) {
 	if (j * step >= 0 and i * step >= 0 and j * step <= w and i * step <= h) {
@@ -128,47 +175,72 @@ int Object::BoundaryInit(double x, double y) {
 }
 
 Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
+
 	if (key == false) {
 		Point node_i_j = temp_grid_[time_ - 1][y][x];
 		Point next_step_node = node_i_j;
-		if (x != 0 and y != 0 and x != w_s - 1 and y != h_s - 1) {
+		if (node_i_j.GetInternal()) {
 			
-			Point node_i_1_j = temp_grid_[time_ - 1][y + 1][x];
-			Point node_1_i_j = temp_grid_[time_ - 1][y - 1][x];
-			Point node_i_j_1 = temp_grid_[time_ - 1][y][x + 1];
-			Point node_i__1_j = temp_grid_[time_ - 1][y][x - 1];
-			//copy(node_i_1_j, temp_grid_[time_ - 1][y][x - 1]);
-			
+			if (x != 0 and y != 0 and x != w_s - 1 and y != h_s - 1) {
 
-			switch (node_i_j.GetBoundary())
-			{
-			case 0:
-				next_step_node.SetTemp(node_i_j.GetTemp() + h_t * (-4 * node_i_j.GetTemp() + node_1_i_j.GetTemp() + node_i_1_j.GetTemp() + node_i__1_j.GetTemp() + node_i_j_1.GetTemp()) / (step * step));
-				break;
-			case 1:
-				next_step_node.SetTemp(100);
-				break;
-			case 2:
-				next_step_node.SetTemp(200);
-				break;
+				Point node_i_1_j = temp_grid_[time_ - 1][y + 1][x];
+				Point node_1_i_j = temp_grid_[time_ - 1][y - 1][x];
+				Point node_i_j_1 = temp_grid_[time_ - 1][y][x + 1];
+				Point node_i__1_j = temp_grid_[time_ - 1][y][x - 1];
+				//copy(node_i_1_j, temp_grid_[time_ - 1][y][x - 1]);
 
-			case 3:
-				if (boundary) {
-					//if(node_i_j)
+
+				switch (node_i_j.GetBoundary())
+				{
+				case 0:
+					next_step_node.SetTemp(node_i_j.GetTemp() + h_t * (-4 * node_i_j.GetTemp() + node_1_i_j.GetTemp() + node_i_1_j.GetTemp() + node_i__1_j.GetTemp() + node_i_j_1.GetTemp()) / (step * step));
+					break;
+				case 1:
+					next_step_node.SetTemp(100);
+					break;
+				case 2:
+					next_step_node.SetTemp(200);
+					break;
+
+				case 3:
+					if (boundary) {
+						//if(node_i_j)
+					}
+					break;
+				case 4:
+					break;
+
+				default:
+					break;
 				}
-				break;
-			case 4:
-				break;
 
-			default:
-				break;
+			}
+			else {
+				switch (node_i_j.GetBoundary())
+				{
+				case 1:
+					next_step_node.SetTemp(100);
+					break;
+				case 2:
+					next_step_node.SetTemp(200);
+					break;
+
+				case 3:
+					if (boundary) {
+						//if(node_i_j)
+					}
+					break;
+				case 4:
+					break;
+
+				default:
+					break;
+				}
 			}
 			
 		}
-		else {
-
-		}
 		return next_step_node;
+
 		
 		
 	}

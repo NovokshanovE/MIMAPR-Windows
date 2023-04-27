@@ -23,9 +23,16 @@ int main()
  	Object* body = new Object(variant, p1, p2, step, boundary);
 	
 	//body->SetStep(step);
-	body->PrintGrid(0);
-	body->NextStep(false);
-	body->PrintGrid(1);
+	body->PrintTempGrid(0);
+	for (int i = 1; i < 100; i++) {
+		body->NextStep(false);
+		if (i % 10 == 0) {
+			body->PrintTempGrid(i);
+			body->PrintGrid(i);
+		}
+		
+	}
+
 	//ArrayXXf
 	//int in_put;
 	//cin >> in_put;

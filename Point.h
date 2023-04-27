@@ -11,7 +11,8 @@ public:
 	Point();
 	Point(double x, double y);
 	Point& operator= (Point&);
-	void SetBoundary(int key, double mx, double my);
+	void SetBoundary(int);
+	void SetMu(double, double);
 	void SetInternal(bool key);
 	void SetTemp(double new_temp);
 	double GetTemp();

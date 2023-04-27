@@ -33,14 +33,15 @@ private:
 public:
 	Object(int v, double p1, double p2, int step, vector<int> boundary);
 	void PrintGrid(int k);
+	void PrintTempGrid(int k);
 	void CompletionGrid();
 	void SetBoundary(vector<int> boundary);
 	int BoundaryInit(double x, double y);
 	bool InternalSet(double j, double i);
 	Point& PointOnNextStep(int x, int y, bool key, bool boundary);
 	void NextStep(bool key);
-	double SetMuX(int, int);
-	double SetMuY(int, int);
+	double SetMuX(int, int, int);
+	double SetMuY(int, int, int);
 	//void SetStep(int step);
 	//void CompletionTempGrid();
 

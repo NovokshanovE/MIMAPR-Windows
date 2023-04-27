@@ -30,8 +30,11 @@ Point& Point::operator=(Point& p) {
 void Point::SetInternal(bool key) {
 	this->internal = key;
 }
-void Point::SetBoundary(int key, double mx, double my) {
+void Point::SetBoundary(int key) {
 	boundary = key;
+	
+}
+void Point::SetMu(double mx, double my) {
 	muX = mx;
 	muY = my;
 }
