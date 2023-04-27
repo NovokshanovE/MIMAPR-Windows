@@ -148,6 +148,9 @@
   <ItemGroup>
     <ResourceCompile Include="MiMAPR-Windows.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="input.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\Eigen3.3.3.9\build\native\Eigen3.targets" Condition="Exists('packages\Eigen3.3.3.9\build\native\Eigen3.targets')" />
