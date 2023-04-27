@@ -13,6 +13,8 @@ public:
 	Point& operator= (Point&);
 	void SetBoundary(int);
 	void SetMu(double, double);
+	double GetMuX();
+	double GetMuY();
 	void SetInternal(bool key);
 	void SetTemp(double new_temp);
 	double GetTemp();

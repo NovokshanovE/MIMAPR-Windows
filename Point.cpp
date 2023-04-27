@@ -51,3 +51,10 @@ int Point::GetBoundary() {
 bool Point::GetInternal() {
 	return internal;
 }
+
+double Point::GetMuX() {
+	return muX;
+}
+double Point::GetMuY() {
+	return muY;
+}

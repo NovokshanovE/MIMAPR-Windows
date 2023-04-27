@@ -1,6 +1,6 @@
 #include "Object.h"
 #include "Point.h"
-
+#include <stdio.h>
 int main()
 {
 	int variant;
@@ -24,9 +24,9 @@ int main()
 	
 	//body->SetStep(step);
 	body->PrintTempGrid(0);
-	for (int i = 1; i < 100; i++) {
+	for (int i = 1; i < 1000; i++) {
 		body->NextStep(false);
-		if (i % 10 == 0) {
+		if (i % 100 == 0) {
 			body->PrintTempGrid(i);
 			body->PrintGrid(i);
 		}
