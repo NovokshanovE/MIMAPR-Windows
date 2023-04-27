@@ -24,6 +24,8 @@ int main()
 	
 	//body->SetStep(step);
 	body->PrintGrid(0);
+	body->NextStep(false);
+	body->PrintGrid(1);
 	//ArrayXXf
 	//int in_put;
 	//cin >> in_put;

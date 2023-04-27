@@ -22,6 +22,8 @@ private:
 	int s = 100;
 	int r1 = 50, r2 = 150;
 	int h_s, w_s;
+	int h_t = 1;
+	int time_;
 	Hole* hole;
 	int step;
 	vector<int> boundary_;
@@ -34,7 +36,11 @@ public:
 	void CompletionGrid();
 	void SetBoundary(vector<int> boundary);
 	int BoundaryInit(double x, double y);
-	Point PointOnNextStep(Point node);
+	bool InternalSet(double j, double i);
+	Point& PointOnNextStep(int x, int y, bool key, bool boundary);
+	void NextStep(bool key);
+	double SetMuX(int, int);
+	double SetMuY(int, int);
 	//void SetStep(int step);
 	//void CompletionTempGrid();
 

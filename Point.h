@@ -6,10 +6,11 @@ private:
 	double muX, muY;
 	int boundary;
 	bool internal;
-	char g_u;
+	int time;
 public:
 	Point();
 	Point(double x, double y);
+	Point& operator= (Point&);
 	void SetBoundary(int key, double mx, double my);
 	void SetInternal(bool key);
 	void SetTemp(double new_temp);

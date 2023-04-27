@@ -142,7 +142,11 @@
     <ClInclude Include="Hole.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Point.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="Square.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MiMAPR-Windows.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
