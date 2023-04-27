@@ -11,7 +11,7 @@
 #include "Hole.h"
 #include "Circle.h"
 #include "Square.h"
-
+#include <fstream>
 using namespace Eigen;
 using namespace std;
 ///usr/include/eigen3
@@ -34,6 +34,7 @@ public:
 	Object(int v, double p1, double p2, int step, vector<int> boundary);
 	void PrintGrid(int k);
 	void PrintTempGrid(int k);
+	void OutToFile();
 	void CompletionGrid();
 	void SetBoundary(vector<int> boundary);
 	int BoundaryInit(double x, double y);

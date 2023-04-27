@@ -1,5 +1,11 @@
 #include "Object.h"
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
+#include<Eigen/SparseLU>
+#include <io.h>
 
+//#pragma warning(suppress : 4996)
+#pragma warning(disable : 4996)
 Object::Object(int v, double p1, double p2, int step, vector<int> boundary) {
 	boundary_ = boundary;
 	time_ = 0;
@@ -25,7 +31,25 @@ void Object::PrintGrid(int k) {
 			cout << ' ' << temp_grid_[k][i][j].GetBoundary();
 	}
 }
-
+void Object::OutToFile() {
+	//ofstream fout("output.txt");
+	FILE* fd = fopen("output.txt", "w");
+	fprintf(fd, "  t   x   y   T\n");
+	for(int t = 0; t <= time_; t++)
+		for (int i = 0; i < h_s; i++) {
+		
+			for (int j = 0; j < w_s; j++)
+				if (temp_grid_[t][i][j].GetInternal()) {
+					fprintf(fd, "%03d %03d %03d %-05.2f\n",t, j, i, temp_grid_[t][i][j].GetTemp());
+					//fout << t << ' ' << j * step << i * step << temp_grid_[t][i][j].GetTemp();
+				}
+			//fout << '\n';
+			
+				
+		}
+	fclose(fd);
+	//fout.close();
+}
 void Object::PrintTempGrid(int k) {
 	hole->Print();
 	for (int i = 0; i < h_s; i++) {
@@ -378,30 +402,211 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 }
 
 void Object::NextStep(bool key) { 
-	time_++;
-	vector< vector<Point>> next_step_grid;
-	//next_step_grid.reserve(h_s);
-	for (int i = 0; i < h_s; i++) {
-		vector<Point> next_string;// = next_step_grid[i];
-		//next_string.reserve(w_s);
-		for (int j = 0; j < w_s; j++) {
+	if (key == false) {
+		time_++;
+		vector< vector<Point>> next_step_grid;
+		//next_step_grid.reserve(h_s);
+		for (int i = 0; i < h_s; i++) {
+			vector<Point> next_string;// = next_step_grid[i];
+			//next_string.reserve(w_s);
+			for (int j = 0; j < w_s; j++) {
 
-			Point node = PointOnNextStep(j, i, key, false);
-			next_string.push_back(node);
-			
+				Point node = PointOnNextStep(j, i, key, false);
+				next_string.push_back(node);
 
-			
-		}
-		next_step_grid.push_back(next_string);
-	}
-	for (int i = 0; i < h_s; i++) {
-		for (int j = 0; j < w_s; j++) {
-			if (temp_grid_[time_ - 1][i][j].GetBoundary() >= 3) {
-				next_step_grid[i][j] = PointOnNextStep(j, i, key, true);
+
+
 			}
+			next_step_grid.push_back(next_string);
+		}
+		for (int i = 0; i < h_s; i++) {
+			for (int j = 0; j < w_s; j++) {
+				if (temp_grid_[time_ - 1][i][j].GetBoundary() >= 3) {
+					next_step_grid[i][j] = PointOnNextStep(j, i, key, true);
+				}
+
+			}
+		}
+		temp_grid_.push_back(next_step_grid);
+	}
+	else if(key == true){
+		time_ ++;
+		double mu;
+		double* difw = new double(0);
+		double* difr = new double(0);
+		double** ws;
+		ws = new double* [h_s];
+		int size_matr;
+		
+		for (int i = 0; i < h_s; i++) {
+			ws[i] = new double[w_s];
+			size_matr = 0;
+			for (int j = 0; j < w_s; j++)
+				if (temp_grid_[time_ - 1][i][j].GetInternal())
+					size_matr++;
+			Eigen::SparseMatrix<double> sm(size_matr, size_matr);
+			Eigen::VectorXd res(size_matr), x(size_matr);
+			size_matr = 0;
+			int last_s = 1000;
+			for (int j = 0; j < w_s; j++)
+			{
+				if (temp_grid_[time_ - 1][i][j].GetInternal())
+				{
+					mu = temp_grid_[time_ - 1][i][j].GetMuX();
+					*difw = 0;
+					*difr = 0;
+
+					if (temp_grid_[time_ - 1][i][j].GetBoundary())
+					{
+						switch (temp_grid_[time_ - 1][i][j].GetBoundary())
+						{
+						case 1:
+							*difr = -(100 * 2 * h_t / (h * h * mu * (1 + mu)));
+							*difw = 0;
+							break;
+						case 2:
+							*difr = -(200 * 2 * h_t / (h * h * mu * (1 + mu)));
+							*difw = 0;
+							break;
+						case 3:
+							*difr = 0;
+							*difw = 2 * h_t / (h * h * mu * (1 + mu));
+							break;
+						case 4:
+							*difr = 0;
+							*difw = 2 * h_t / (h * h * mu * (1 + mu) * (1 + h * mu));
+							break;
+						}
+
+					}
+					
+					if (j != w_s - 1 and (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 ||  temp_grid_[time_ - 1][i][j + 1].GetBoundary() == 0)) {
+						if (size_matr + 1 > last_s) {
+							cout << endl;
+						}
+						sm.insert(size_matr, size_matr + 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+					}
+					if (j != 0 and (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 ||  temp_grid_[time_ - 1][i][j - 1].GetBoundary() == 0))
+					{
+						if (size_matr - 1 < 0) {
+							cout << endl;
+						}
+						sm.insert(size_matr, size_matr - 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+					}
+					sm.insert(size_matr, size_matr) = -(2 * h_t / (mu * h * h) + 1) + *difw;
+					res(size_matr) = -temp_grid_[time_ - 1][i][j].GetTemp() + *difr;
+					size_matr++;
+				}
+			}
+			last_s = size_matr;
+			if (size_matr > 0)
+			{
+				Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+				solver.compute(sm);
+				x = solver.solve(res);
+				size_matr = 0;
+				for (int j = 0; j < w_s; j++)
+				{
+					if (temp_grid_[time_ - 1][i][j].GetInternal())
+					{
+						ws[i][j] = x(size_matr);
+						size_matr++;
+					}
+				}
+			}
+		}
+//-------------------------------------------------------------------------------------------------
+		vector< vector<Point>> next_step_grid;
+		
+		for (int i = 0; i < h_s; i++) {
+			vector<Point> next_string;
+			for (int j = 0; j < w_s; j++) {
+				Point next_step_node = temp_grid_[time_ - 1][i][j];
+				next_string.push_back(next_step_node);
+			}
+			next_step_grid.push_back(next_string);
+		}
+		temp_grid_.push_back(next_step_grid);
+		for (int j = 0; j < w_s; j++) {
+			
+			//ws[i] = new double[w_s];
+			size_matr = 0;
+			for (int i = 0; i < h_s; i++)
+				if (temp_grid_[time_ - 1][i][j].GetInternal())
+					size_matr++;
+			Eigen::SparseMatrix<double> sm(size_matr, size_matr);
+			Eigen::VectorXd res(size_matr), x(size_matr);
+			size_matr = 0;
+			for (int i = 0; i < h_s; i++)
+			{
+				if (temp_grid_[time_ - 1][i][j].GetInternal())
+				{
+					mu = temp_grid_[time_ - 1][i][j].GetMuY();
+					*difw = 0;
+					*difr = 0;
+
+					if (temp_grid_[time_ - 1][i][j].GetBoundary())
+					{
+						switch (temp_grid_[time_ - 1][i][j].GetBoundary())
+						{
+						case 1:
+							*difr = -(100 * 2 * h_t / (h * h * mu * (1 + mu)));
+							*difw = 0;
+							break;
+						case 2:
+							*difr = -(200 * 2 * h_t / (h * h * mu * (1 + mu)));
+							*difw = 0;
+							break;
+						case 3:
+							*difr = 0;
+							*difw = 2 * h_t / (h * h * mu * (1 + mu));
+							break;
+						case 4:
+							*difr = 0;
+							*difw = 2 * h_t / (h * h * mu * (1 + mu) * (1 + h * mu));
+							break;
+						}
+
+					}
+					if (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 || (i != h_s - 1 and temp_grid_[time_ - 1][i+1][j].GetBoundary() == 0)) {
+
+						sm.insert(size_matr, size_matr + 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+					}
+					if (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 || (i != 0 and temp_grid_[time_ - 1][i-1][j].GetBoundary() == 0))
+					{
+						sm.insert(size_matr, size_matr - 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+					}
+					sm.insert(size_matr, size_matr) = -(2 * h_t / (mu * h * h) + 1) + *difw;
+					res(size_matr) = -temp_grid_[time_ - 1][i][j].GetTemp() + *difr;
+					size_matr++;
+				}
+			}
+			if (size_matr > 0)
+			{
+				Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+				solver.compute(sm);
+				x = solver.solve(res);
+				size_matr = 0;
+				for (int i = 0; i < h_s; i++)
+				{
+					
+					if (temp_grid_[time_ - 1][i][j].GetInternal())
+					{
+						temp_grid_[time_][i][j].SetTemp(x(size_matr));
+						size_matr++;
+					}
+					
+				}
+			}
+			
 
 		}
+		
+		//for (int i = 0; i < edges.size(); i++)
+			//edges[i]->calculate(t);
+		
 	}
-	temp_grid_.push_back(next_step_grid);
+		
+	
 }
 
