@@ -24,9 +24,9 @@ int main()
 	
 	//body->SetStep(step);
 	body->PrintTempGrid(0);
-	for (int i = 1; i < 1000; i++) {
+	for (int i = 1; i < 100000; i++) {
 		body->NextStep(false);
-		if (i % 100 == 0) {
+		if (i % 10000 == 0) {
 			body->PrintTempGrid(i);
 			body->PrintGrid(i);
 		}

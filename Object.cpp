@@ -31,10 +31,12 @@ void Object::PrintTempGrid(int k) {
 	for (int i = 0; i < h_s; i++) {
 		cout << endl;
 		for (int j = 0; j < w_s; j++)
-			if(temp_grid_[k][i][j].GetInternal())
-				printf(" %03.f", temp_grid_[k][i][j].GetTemp());
+			if (temp_grid_[k][i][j].GetInternal()) {
+				int t = temp_grid_[k][i][j].GetTemp()/29;
+				printf(" \033[9%dm#\033[0m", 7-t);
+			}
 			else
-				printf(" ---");
+				printf(" -");
 	}
 }
 
