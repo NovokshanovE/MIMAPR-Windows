@@ -8,74 +8,42 @@
 #include <cmath>
 #include <vector>
 #include "Point.h"
-
-
-
+#include "Hole.h"
+#include "Circle.h"
+#include "Square.h"
+#include <fstream>
 using namespace Eigen;
 using namespace std;
 ///usr/include/eigen3
 
-
-
-class Hole {
-private:
-	double X, Y;
-	bool variant;
-public:
-	Hole(double X, double Y) {
-		this->X = X;
-		this->Y = Y;
-	}
-	double getX() {
-		return X;
-	}
-	double getY() {
-		return Y;
-	}
-	bool getVariant() {
-		return variant;
-	}
-	void print() {
-		cout << variant << ":" << X << " " << Y << endl;
-	}
-	void set_var(bool variant) {
-		this->variant = variant;
-	}
-};
-
-class Square : public Hole {
-private:
-	double S = 100;
-public:
-	Square(double p1, double p2) : Hole(p1, p2) {
-		Hole::set_var(true);
-	}
-};
-
-class Circle : public Hole {
-private:
-	double R = 50;
-public:
-	Circle(double p1, double p2) : Hole(p1, p2) {
-		Hole::set_var(false);
-	}
-};
-
 class Object {
 private:
-	int H = 400, W = 500;
-	int S = 100;
-	int R1 = 50, R2 = 150;
-	int H_s, W_s;
+	int h = 400, w = 500;
+	int s = 100;
+	int r1 = 50, r2 = 150;
+	int h_s, w_s;
+	int h_t = 1;
+	int time_;
 	Hole* hole;
-	int step = 10;
-	ArrayXXf grid;
-	vector< vector < vector <Point>> > tempGrid;
-	vector< pair <char, int> > boundary—onditions;
+	int step;
+	vector<int> boundary_;
+	//ArrayXXf grid;
+	vector< vector < vector <Point>> > temp_grid_;
+	vector< pair <char, int> > boundary_conditions_;
 public:
-	Object(int v, double p1, double p2);
-	void print();
-	void completion_grid();
-	void completion_temp_grid();
+	Object(int v, double p1, double p2, int step, vector<int> boundary);
+	void PrintGrid(int k);
+	void PrintTempGrid(int k);
+	void OutToFile();
+	void CompletionGrid();
+	void SetBoundary(vector<int> boundary);
+	int BoundaryInit(double x, double y, bool);
+	bool InternalSet(double j, double i);
+	Point& PointOnNextStep(int x, int y, bool key, bool boundary);
+	void NextStep(bool key);
+	double SetMuX(int, int, int);
+	double SetMuY(int, int, int);
+	//void SetStep(int step);
+	//void CompletionTempGrid();
 
 };
