@@ -33,7 +33,7 @@ int main()
 	fout << '\n';
 	//body->PrintTempGrid(0);
 	fout.close();
-	for (int i = 1; i < 100; i++) {
+	for (int i = 1; i < 1000; i++) {
 		body->NextStep(false);
 		
 		//if (i % 10000 == 0) {
