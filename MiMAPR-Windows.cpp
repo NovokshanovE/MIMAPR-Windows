@@ -33,6 +33,7 @@ int main()
 	fout << '\n';
 	//body->PrintTempGrid(0);
 	fout.close();
+	body->PrintGrid(0);
 	for (int i = 1; i < 1000; i++) {
 		body->NextStep(false);
 		
@@ -46,7 +47,7 @@ int main()
 	fin.close();
 	body->OutToFile();
 	body->PrintTempGrid(999);
-	body->PrintGrid(0);
+	//body->PrintGrid(0);
 	//ArrayXXf
 	//int in_put;
 	//cin >> in_put;

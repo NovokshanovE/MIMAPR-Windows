@@ -10,7 +10,7 @@ private:
 public:
 	Point();
 	Point(double x, double y);
-	Point& operator= (Point&);
+	//Point& operator= (Point&);
 	void SetBoundary(int);
 	void SetMu(double, double);
 	double GetMuX();

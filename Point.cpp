@@ -1,11 +1,13 @@
 #include "Point.h"
 
 Point::Point() {
-	double x = 0, y = 0;
-	double temp = 0;
-	double muX = 0, muY = 0;
-	bool boundary = false;
-	bool internal = false;
+	x = 0;
+	y = 0;
+	temp = 0;
+	muX = 1;
+	muY = 1;
+	boundary = false;
+	internal = false;
 	time = 0;
 }
 Point::Point(double X, double Y) {
@@ -14,19 +16,21 @@ Point::Point(double X, double Y) {
 	temp = 0;
 	boundary = 0;
 	time = 0;
+	muX = 1;
+	muY = 1;
 	
 }
-Point& Point::operator=(Point& p) {
-	x = p.x;
-	y = p.y;
-	temp = p.temp;
-	muX = p.muX;
-	muY = p.muY;
-	boundary = p.boundary;
-	internal = p.internal;
-	time = p.time + 1;
-	return *this;
-}
+//Point& Point::operator=(Point& p) {
+//	x = p.x;
+//	y = p.y;
+//	temp = p.temp;
+//	muX = p.muX;
+//	muY = p.muY;
+//	boundary = p.boundary;
+//	internal = p.internal;
+//	time = p.time + 1;
+//	return *this;
+//}
 void Point::SetInternal(bool key) {
 	this->internal = key;
 }

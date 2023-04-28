@@ -2,6 +2,8 @@
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 #include<Eigen/SparseLU>
+#include <math.h>
+//#include <Eigen::SparseQR>
 #include <io.h>
 
 //#pragma warning(suppress : 4996)
@@ -28,7 +30,10 @@ void Object::PrintGrid(int k) {
 	for (int i = 0; i < h_s; i++) {
 		cout << endl;
 		for (int j = 0; j < w_s; j++)
-			cout << ' ' << temp_grid_[k][i][j].GetBoundary() << temp_grid_[k][i][j].GetInternal();
+			if(temp_grid_[k][i][j].GetInternal())
+				cout << ' ' << temp_grid_[k][i][j].GetMuY();
+			else
+				cout << ' ' << "-";
 	}
 }
 void Object::OutToFile() {
@@ -97,7 +102,22 @@ void Object::CompletionGrid() {
 
 		for (int j = 0; j < w_s; j++) {
 			temp_grid_[0][i][j].SetBoundary(BoundaryInit(j, i, InternalSet(j, i)));
-			temp_grid_[0][i][j].SetMu(SetMuX(j, i, temp_grid_[0][i][j].GetBoundary()), SetMuY(j, i, temp_grid_[0][i][j].GetBoundary()));
+			double muX = SetMuX(j, i, temp_grid_[0][i][j].GetBoundary()), muY = SetMuY(j, i, temp_grid_[0][i][j].GetBoundary());
+			vector<pair<int, int>> prov = { {0,1},{1,0},{0,-1},{-1,0} };
+			
+			if (muX < 0.0001 or muY < 0.0001) {
+				temp_grid_[0][i][j].SetInternal(InternalSet(j, i));
+				temp_grid_[0][i][j].SetBoundary(-1);
+				for (int k = 0; k < 4; k++) {
+					if (temp_grid_[0][i + prov[k].second][j + prov[k].first].GetInternal()) {
+						temp_grid_[0][i + prov[k].second][j + prov[k].first].SetBoundary(BoundaryInit(j, i, InternalSet(j, i)));
+						temp_grid_[0][i + prov[k].second][j + prov[k].first].SetMu(1, 1);
+						
+
+					}
+				}
+			}
+			temp_grid_[0][i][j].SetMu(muX, muY);
 		}
 		
 	}
@@ -106,59 +126,77 @@ void Object::CompletionGrid() {
 double Object::SetMuX(int x, int y, int key) {
 	double res = 0;
 	if (key) {
-		if (x != 0 and x < w_s - 1) {
+		if (x != 0 and x < w_s - 1 and y != 0 and y < h_s - 1) {
 			
-			if (InternalSet(x-1, y) and InternalSet(x, y-1)) {
+			/*if (InternalSet(x-1, y) and InternalSet(x, y-1) ) {
 				return 1;
+			}*/
+			//else {
+			double res_r2 = abs(x * step - (w - r2 + sqrt(abs(r2 * r2 - (y * step - h + r2) * (y * step - h + r2)))));
+			if (hole->GetVariant()) {
+				res = (abs(x * step - (hole->GetX() + s/2)) > abs(x * step - (hole->GetX() - s/2))) ? abs(x * step - (hole->GetX() - s/2)) : abs(x * step - (hole->GetX() + s/2));
+				res = (res < res_r2) ? res : res_r2;
+				res = (res < step) ? res : step;
+				return (res < 1 / step) ? 1 : (res / step);
 			}
 			else {
-				if (hole->GetVariant()) {
-					res = (abs(x * step - hole->GetX() + s) > abs(x * step - hole->GetX() - s)) ? abs(x * step - hole->GetX() - s) : abs(x * step - hole->GetX() + s);
-					return (res < 1 / step) ? 1 : res / step;
+				if (x * step > hole->GetX()) {
+					res = abs(x * step - (hole->GetX() + sqrt(abs(r1*r1 - (y * step - hole->GetY())* (y * step - hole->GetY())))));
+					res = (res < res_r2) ? res : res_r2;
+					res = (res < step) ? res : step;
+					return (res < 1 / step) ? 1 : (res / step);
 				}
 				else {
-					if (x * step > hole->GetX()) {
-						res = x * step - (hole->GetX() + sqrt(r1*r1 - (y - hole->GetY())* (y - hole->GetY())));
-						return (res < 1 / step) ? 1 : res / step;
-					}
-					else {
-						res = x * step - (hole->GetX() - sqrt(r1 * r1 - (y - hole->GetY()) * (y - hole->GetY())));
-						return (res < 1 / step) ? 1 : res / step;
-					}
+					res = abs(x * step - (hole->GetX() - sqrt(abs(r1 * r1 - (y * step - hole->GetY()) * (y * step - hole->GetY())))));
+					res = (res < res_r2) ? res : res_r2;
+					res = (res < step) ? res : step;
+					return (res < 1 / step) ? 1 : (res / step);
 				}
 			}
+			//}
 		}
 		else
 			return 1;
 	}
+	else
+		return 1;
 }
 double Object::SetMuY(int x, int y, int key) {
 	double res = 0;
 	if (key) {
-		if (y != 0 and y != h_s - 1) {
-			if (InternalSet(x, y-1) and InternalSet(x-1, y)) {
+		if (x != 0 and x < w_s - 1 and y != 0 and y < h_s - 1) {
+			/*if (InternalSet(x, y-1) and InternalSet(x-1, y)) {
 				return 1;
 			}
+			else {*/
+			double res_r2 = abs(y * step - (h - r2 + sqrt(abs(r2 * r2 - (x * step - w + r2) * (x * step - w + r2)))));
+			if (hole->GetVariant()) {
+				res = (abs(y * step - (hole->GetY() + s/2)) > abs(y * step - (hole->GetY() - s/2))) ? abs(y * step - (hole->GetY() - s/2)) : abs(y * step - (hole->GetY() + s/2));
+				res = (res < res_r2) ? res : res_r2;
+				res = (res < step) ? res : step;
+				return (res < 1 / step) ? 1 : (res / step);
+			}
 			else {
-				if (hole->GetVariant()) {
-					res = (abs(y * step - hole->GetY() + s) > abs(y * step - hole->GetY() - s)) ? abs(y * step - hole->GetY() - s) : abs(y * step - hole->GetY() + s);
-					return (res < 1 / step) ? 1 : res / step;
+				if (y * step > hole->GetY()) {
+					res = y * step - (hole->GetY() + sqrt(abs(r1 * r1 - (x * step - hole->GetX()) * (x * step - hole->GetX()))));
+					res = (res < res_r2) ? res : res_r2;
+					res = (res < step) ? res : step;
+					return (res < 1 / step) ? 1 : (res / step);
 				}
 				else {
-					if (y * step > hole->GetY()) {
-						res = y * step - (hole->GetY() + sqrt(r1 * r1 - (x - hole->GetX()) * (x - hole->GetX())));
-						return (res < 1 / step) ? 1 : res / step;
-					}
-					else {
-						res = y * step - (hole->GetY() - sqrt(r1 * r1 - (x - hole->GetX()) * (x - hole->GetX())));
-						return (res < 1/step) ? 1 : res / step;
-					}
+					res = y * step - (hole->GetY() - sqrt(abs(r1 * r1 - (x * step - hole->GetX()) * (x * step - hole->GetX()))));
+					res = (res < res_r2) ? res : res_r2;
+					res = (res < step) ? res : step;
+					return (res < 1 / step) ? 1 : (res / step);
 				}
 			}
+			//}
 		}
 		else
 			return 1;
 	}
+	else
+		return 1;
 }
 bool Object::InternalSet(double j, double i) {
 	if (j * step >= 0 and i * step >= 0 and j * step <= w and i * step <= h) {
@@ -264,50 +302,46 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 				Point node_i__1_j = temp_grid_[time_ - 1][y][x - 1];
 				//copy(node_i_1_j, temp_grid_[time_ - 1][y][x - 1]);
 
-				double res = 0;
+				double res = node_i_j.GetTemp();
 				switch (node_i_j.GetBoundary())
 				{
 				case 0:
-					res += node_i_j.GetTemp() + h_t * (-4 * node_i_j.GetTemp() + node_1_i_j.GetTemp() + node_i_1_j.GetTemp() + node_i__1_j.GetTemp() + node_i_j_1.GetTemp()) / (step * step);
-					if (res > 200) {
-						res /= 1.5;
-					}
+					res += h_t * (-4 * node_i_j.GetTemp() + node_1_i_j.GetTemp() + node_i_1_j.GetTemp() + node_i__1_j.GetTemp() + node_i_j_1.GetTemp()) / (step * step);
+					
 					next_step_node.SetTemp(res);
 					break;
 				case 1:
-					/*if (node_i_j.GetMuX() == 1 and node_i_j.GetMuY() == 1) {
+					if (node_i_j.GetMuX() == 1 and node_i_j.GetMuY() == 1) {
 						next_step_node.SetTemp(100);
 						return next_step_node;
 					}
-					else {*/
-						if (temp_grid_[time_ - 1][y][x + 1].GetBoundary() == 0 and temp_grid_[time_ - 1][y][x - 1].GetBoundary() == -1) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x + 1].GetTemp()) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+					else {
+						if (temp_grid_[time_ - 1][y][x + 1].GetBoundary() == 0) {
+							res += h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x + 1].GetTemp()) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
 							
 						}
-						 else if (temp_grid_[time_ - 1][y][x - 1].GetBoundary() == 0 and temp_grid_[time_ - 1][y][x + 1].GetBoundary() == -1) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x - 1].GetTemp() + 100) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+						 else if (temp_grid_[time_ - 1][y][x - 1].GetBoundary() == 0) {
+							res += h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x - 1].GetTemp() + 100) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
 							//printf("!");
 						}
 						//else {
 						//	res += node_i_j.GetTemp() + h_t * (-2 * node_i_j.GetTemp() + temp_grid_[time_ - 1][y][x + 1].GetTemp() + temp_grid_[time_ - 1][y][x - 1].GetTemp()) / (step * step);
 						//}
-						if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0 and temp_grid_[time_ - 1][y - 1][x].GetBoundary() == -1) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuY() * temp_grid_[time_ - 1][y + 1][x].GetTemp()) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+						if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0) {
+							res += h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuY() * temp_grid_[time_ - 1][y + 1][x].GetTemp()) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
 						}
 
-						 else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0 and temp_grid_[time_ - 1][y + 1][x].GetBoundary() == -1) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * temp_grid_[time_ - 1][y - 1][x].GetTemp() + 100) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+						 else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
+							res += h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * temp_grid_[time_ - 1][y - 1][x].GetTemp() + 100) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
 							//printf("!");
 						}
 						//else {
 						//	res += node_i_j.GetTemp() + h_t * (-2 * node_i_j.GetTemp() + temp_grid_[time_ - 1][y + 1][x].GetTemp() + temp_grid_[time_ - 1][y - 1][x].GetTemp()) / (step * step);
 						//}
-						if (res > 200) {
-							res /= 1.5;
-						}
+						
 						next_step_node.SetTemp(res);
 						return next_step_node;
-					//}
+					}
 					
 					break;
 				case 2:
@@ -317,21 +351,19 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 					}
 					else {
 						if (temp_grid_[time_ - 1][y][x + 1].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + 200 + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x + 1].GetTemp()) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+							res += h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + 200 + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x + 1].GetTemp()) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
 						}
 						else if (temp_grid_[time_ - 1][y][x - 1].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x - 1].GetTemp() + 200) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+							res += h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x - 1].GetTemp() + 200) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
 						}
 						if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + 200 + node_i_j.GetMuY() * temp_grid_[time_ - 1][y + 1][x].GetTemp()) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+							res += h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + 200 + node_i_j.GetMuY() * temp_grid_[time_ - 1][y + 1][x].GetTemp()) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
 						}
 
 						else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * temp_grid_[time_ - 1][y - 1][x].GetTemp() + 200) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+							res += h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * temp_grid_[time_ - 1][y - 1][x].GetTemp() + 200) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
 						}
-						if (res > 200) {
-							res /= 1.5;
-						}
+						
 						next_step_node.SetTemp(res);
 						return next_step_node;
 					}
@@ -354,9 +386,7 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 						else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
 							res += temp_grid_[time_ - 1][y - 1][x].GetTemp();
 						}
-						if (res > 200) {
-							res /= 1.5;
-						}
+						
 						next_step_node.SetTemp(res);
 						return next_step_node;
 						//if(node_i_j)
@@ -376,9 +406,7 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 						else if (y == h_s - 1) {
 							res += temp_grid_[time_ - 1][y - 1][x].GetTemp() / (step * temp_grid_[time_ - 1][y - 1][x].GetMuY() + 1);
 						}
-						if (res > 200) {
-							res /= 1.5;
-						}
+						
 						next_step_node.SetTemp(res);
 						return next_step_node;
 						//if(node_i_j)
@@ -487,8 +515,8 @@ void Object::NextStep(bool key) {
 	else if(key == true){
 		time_ ++;
 		double mu;
-		double* difw = new double(0);
-		double* difr = new double(0);
+		double difw = 0;
+		double difr = 0;
 		double** ws;
 		ws = new double* [h_s];
 		int size_matr;
@@ -499,6 +527,8 @@ void Object::NextStep(bool key) {
 			for (int j = 0; j < w_s; j++)
 				if (temp_grid_[time_ - 1][i][j].GetInternal())
 					size_matr++;
+			if (size_matr == 0)
+				continue;
 			Eigen::SparseMatrix<double> sm(size_matr, size_matr);
 			Eigen::VectorXd res(size_matr), x(size_matr);
 			size_matr = 0;
@@ -508,48 +538,49 @@ void Object::NextStep(bool key) {
 				if (temp_grid_[time_ - 1][i][j].GetInternal())
 				{
 					mu = temp_grid_[time_ - 1][i][j].GetMuX();
-					*difw = 0;
-					*difr = 0;
+					difw = 0;
+					difr = 0;
 
 					if (temp_grid_[time_ - 1][i][j].GetBoundary())
 					{
 						switch (temp_grid_[time_ - 1][i][j].GetBoundary())
 						{
 						case 1:
-							*difr = -(100 * 2 * h_t / (h * h * mu * (1 + mu)));
-							*difw = 0;
+							difr = -(100 * 2 * h_t / (step * step * mu * (1 + mu)));
+							difw = 0;
 							break;
 						case 2:
-							*difr = -(200 * 2 * h_t / (h * h * mu * (1 + mu)));
-							*difw = 0;
+							difr = -(200 * 2 * h_t / (step * step * mu * (1 + mu)));
+							difw = 0;
 							break;
 						case 3:
-							*difr = 0;
-							*difw = 2 * h_t / (h * h * mu * (1 + mu));
+							difr = 0;
+							difw = 2 * h_t / (step * step * mu * (1 + mu));
 							break;
 						case 4:
-							*difr = 0;
-							*difw = 2 * h_t / (h * h * mu * (1 + mu) * (1 + h * mu));
+							difr = 0;
+							difw = 2 * h_t / (step * step * mu * (1 + mu) * (1 + step * mu));
 							break;
 						}
 
 					}
-					
-					if (j != w_s - 1 and (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 ||  temp_grid_[time_ - 1][i][j + 1].GetBoundary() == 0)) {
+					//cout << "difr:" << endl;
+					if (j != w_s - 1 and (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 and  temp_grid_[time_ - 1][i][j + 1].GetBoundary() == 0) or temp_grid_[time_ - 1][i][j].GetBoundary() == 0) {
 						if (size_matr + 1 > last_s) {
 							cout << endl;
 						}
-						sm.insert(size_matr, size_matr + 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+						sm.insert(size_matr, size_matr + 1) = 2 * h_t / (step * step * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
 					}
-					if (j != 0 and (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 ||  temp_grid_[time_ - 1][i][j - 1].GetBoundary() == 0))
+					if (j != 0 and (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 and  temp_grid_[time_ - 1][i][j - 1].GetBoundary() == 0) or temp_grid_[time_ - 1][i][j].GetBoundary() == 0)
 					{
 						if (size_matr - 1 < 0) {
 							cout << endl;
 						}
-						sm.insert(size_matr, size_matr - 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+						sm.insert(size_matr, size_matr - 1) = 2 * h_t / (step * step * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
 					}
-					sm.insert(size_matr, size_matr) = -(2 * h_t / (mu * h * h) + 1) + *difw;
-					res(size_matr) = -temp_grid_[time_ - 1][i][j].GetTemp() + *difr;
+					//cout << "mu:" << mu << endl;
+					sm.insert(size_matr, size_matr) = -(2 * h_t / (mu * step * step) + 1) + difw;
+					res(size_matr) = -temp_grid_[time_ - 1][i][j].GetTemp() + difr;
 					size_matr++;
 				}
 			}
@@ -557,7 +588,11 @@ void Object::NextStep(bool key) {
 			if (size_matr > 0)
 			{
 				Eigen::SparseLU<Eigen::SparseMatrix<double>> solver;
+				//cout << sm.size() << endl;
+				//cout << sm << endl;
 				solver.compute(sm);
+				//cout << (solver.info() == Eigen::Success) << endl;
+				//cout << res.size() << endl;
 				x = solver.solve(res);
 				size_matr = 0;
 				for (int j = 0; j < w_s; j++)
@@ -597,42 +632,42 @@ void Object::NextStep(bool key) {
 				if (temp_grid_[time_ - 1][i][j].GetInternal())
 				{
 					mu = temp_grid_[time_ - 1][i][j].GetMuY();
-					*difw = 0;
-					*difr = 0;
+					difw = 0;
+					difr = 0;
 
 					if (temp_grid_[time_ - 1][i][j].GetBoundary())
 					{
 						switch (temp_grid_[time_ - 1][i][j].GetBoundary())
 						{
 						case 1:
-							*difr = -(100 * 2 * h_t / (h * h * mu * (1 + mu)));
-							*difw = 0;
+							difr = -(100 * 2 * h_t / (step * step * mu * (1 + mu)));
+							difw = 0;
 							break;
 						case 2:
-							*difr = -(200 * 2 * h_t / (h * h * mu * (1 + mu)));
-							*difw = 0;
+							difr = -(200 * 2 * h_t / (step * step * mu * (1 + mu)));
+							difw = 0;
 							break;
 						case 3:
-							*difr = 0;
-							*difw = 2 * h_t / (h * h * mu * (1 + mu));
+							difr = 0;
+							difw = 2 * h_t / (step * step * mu * (1 + mu));
 							break;
 						case 4:
-							*difr = 0;
-							*difw = 2 * h_t / (h * h * mu * (1 + mu) * (1 + h * mu));
+							difr = 0;
+							difw = 2 * h_t / (step * step * mu * (1 + mu) * (1 + step * mu));
 							break;
 						}
 
 					}
-					if (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 || (i != h_s - 1 and temp_grid_[time_ - 1][i+1][j].GetBoundary() == 0)) {
+					if (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 and (i != h_s - 1 and temp_grid_[time_ - 1][i+1][j].GetBoundary() == 0) or temp_grid_[time_ - 1][i][j].GetBoundary() == 0) {
 
-						sm.insert(size_matr, size_matr + 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+						sm.insert(size_matr, size_matr + 1) = 2 * h_t / (step * step * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
 					}
-					if (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 || (i != 0 and temp_grid_[time_ - 1][i-1][j].GetBoundary() == 0))
+					if (temp_grid_[time_ - 1][i][j].GetBoundary() != 0 and (i != 0 and temp_grid_[time_ - 1][i-1][j].GetBoundary() == 0) or temp_grid_[time_ - 1][i][j].GetBoundary() == 0 )
 					{
-						sm.insert(size_matr, size_matr - 1) = 2 * h_t / (h * h * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
+						sm.insert(size_matr, size_matr - 1) = 2 * h_t / (step * step * (1 + mu));  // ”множение на мю есть, т. к. если не конечный, то пох, иначе всегда с мю
 					}
-					sm.insert(size_matr, size_matr) = -(2 * h_t / (mu * h * h) + 1) + *difw;
-					res(size_matr) = -temp_grid_[time_ - 1][i][j].GetTemp() + *difr;
+					sm.insert(size_matr, size_matr) = -(2 * h_t / (mu * step * step) + 1) + difw;
+					res(size_matr) = -temp_grid_[time_ - 1][i][j].GetTemp() + difr;
 					size_matr++;
 				}
 			}
