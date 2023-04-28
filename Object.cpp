@@ -28,7 +28,7 @@ void Object::PrintGrid(int k) {
 	for (int i = 0; i < h_s; i++) {
 		cout << endl;
 		for (int j = 0; j < w_s; j++)
-			cout << ' ' << temp_grid_[k][i][j].GetBoundary();
+			cout << ' ' << temp_grid_[k][i][j].GetBoundary() << temp_grid_[k][i][j].GetInternal();
 	}
 }
 void Object::OutToFile() {
@@ -43,6 +43,9 @@ void Object::OutToFile() {
 					fprintf(fd, "%03d %03d %03d %-05.2f\n",t, j, i, temp_grid_[t][i][j].GetTemp());
 					//fout << t << ' ' << j * step << i * step << temp_grid_[t][i][j].GetTemp();
 				}
+				/*else {
+					fprintf(fd, "%03d %03d %03d %-05.2f\n", t, j, i, -100);
+				}*/
 			//fout << '\n';
 			
 				
@@ -57,10 +60,11 @@ void Object::PrintTempGrid(int k) {
 		for (int j = 0; j < w_s; j++)
 			if (temp_grid_[k][i][j].GetInternal()) {
 				int t = temp_grid_[k][i][j].GetTemp()/29;
-				printf(" \033[9%dm#\033[0m", 7-t);
+				//printf(" \033[9%dm#\033[0m", 7-t);
+				printf(" %03.f", temp_grid_[k][i][j].GetTemp());
 			}
 			else
-				printf(" -");
+				printf(" ---");
 	}
 }
 
@@ -75,9 +79,10 @@ void Object::CompletionGrid() {
 
 		for (int j = 0; j < w_s; j++) {
 			Point node(j * step, i * step);
-			node.SetBoundary(BoundaryInit(j, i));
-			node.SetMu(SetMuX(j, i, node.GetBoundary()), SetMuY(j, i, node.GetBoundary()));
 			node.SetInternal(InternalSet(j, i));
+			
+			
+			
 			
 
 			new_string.push_back(node);
@@ -85,6 +90,17 @@ void Object::CompletionGrid() {
 		new_grid.push_back(new_string);
 	}
 	temp_grid_.push_back(new_grid);
+
+	for (int i = 0; i < h_s; i++) {
+		
+		//new_string.reserve(w_s);
+
+		for (int j = 0; j < w_s; j++) {
+			temp_grid_[0][i][j].SetBoundary(BoundaryInit(j, i, InternalSet(j, i)));
+			temp_grid_[0][i][j].SetMu(SetMuX(j, i, temp_grid_[0][i][j].GetBoundary()), SetMuY(j, i, temp_grid_[0][i][j].GetBoundary()));
+		}
+		
+	}
 
 }
 double Object::SetMuX(int x, int y, int key) {
@@ -183,40 +199,54 @@ bool Object::InternalSet(double j, double i) {
 }
 
 
-int Object::BoundaryInit(double x, double y) {
+int Object::BoundaryInit(double x, double y, bool key) {
 	/*x *= step;
 	y *= step;*/
-	if (x * step < step and x * step > -step) {
-		
-		return boundary_[0];//4
-	}
-	else if (y * step < step and x * step > -step) {
+	if (key) {
+		if (x * step < step and x * step > -step) {
 
-		return boundary_[4];//3
-	}
-	else if (x * step > (w - r2) and y * step > (h - r2) and (pow((x * step - w + r2), 2) + pow((y * step - h + r2), 2)) > pow(r2 - step, 2)) {
+			return boundary_[0];//4
+		}
+		else if (y * step < step and x * step > -step) {
 
-		return boundary_[2];//3
-	}
-	else if (x * step < w + step and x * step > w - step) {
+			return boundary_[4];//3
+		}
+		else if (x * step > (w - r2) and y * step > (h - r2) and (pow((x * step - w + r2), 2) + pow((y * step - h + r2), 2)) > pow(r2 - step, 2)) {
 
-		return boundary_[3];//2
-	}
-	else if (y * step < h + step and y * step > h - step) {
+			return boundary_[2];//3
+		}
+		else if (x * step < w + step and x * step > w - step) {
 
-		return boundary_[1];//1
-	}
-	else {
-		if (hole->GetVariant()) {
-			if (x * step < hole->GetX() + step + s / 2 and (x * step > hole->GetX() - step - s / 2) and y * step < hole->GetY() + step + s / 2 and (y * step > hole->GetY() - step - s / 2))
-				return boundary_[5];//3
+			return boundary_[3];//2
+		}
+		else if (y * step < h + step and y * step > h - step) {
+
+			return boundary_[1];//1
 		}
 		else {
-			if ((pow((x * step - hole->GetX()), 2) + pow((y * step - hole->GetY()), 2)) < pow(r1 + step, 2) and (pow((x * step - hole->GetX()), 2) + pow((y * step - hole->GetY()), 2)) < pow(r1 - step, 2))
-				return boundary_[5];//3
+			if (hole->GetVariant()) {
+				if (x * step < hole->GetX() + step + s / 2 and (x * step > hole->GetX() - step - s / 2) and y * step < hole->GetY() + step + s / 2 and (y * step > hole->GetY() - step - s / 2))
+					return boundary_[5];//3
+			}
+			else {
+				//if(step == 10){
+				if(temp_grid_[0][y-1][x].GetInternal() == 0 or temp_grid_[0][y][x-1].GetInternal() == 0 or temp_grid_[0][y + 1][x].GetInternal() == 0 or temp_grid_[0][y][x+1].GetInternal() == 0)
+					//if ((pow((x * step - hole->GetX() - 2.5), 2) + pow((y * step - hole->GetY() - 2.5), 2)) < pow(r1 + sqrt(2) * step, 2) and (pow((x * step - hole->GetX()), 2) + pow((y * step - hole->GetY()), 2)) >= pow(r1 - sqrt(2) * step, 2))
+						return boundary_[5];//3
+				//}
+				//else {
+				//	if ((pow((x * step - hole->GetX()), 2) + pow((y * step - hole->GetY()), 2)) < pow(r1 + step, 2) and (pow((x * step - hole->GetX()), 2) + pow((y * step - hole->GetY()), 2)) >= pow(r1 - step, 2))
+				//		return boundary_[5];
+				//}
+
+			}
+			return 0;
 		}
-		return 0;
 	}
+	else {
+		return -1;
+	}
+	
 }
 
 Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
@@ -238,30 +268,46 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 				switch (node_i_j.GetBoundary())
 				{
 				case 0:
-					next_step_node.SetTemp(node_i_j.GetTemp() + h_t * (-4 * node_i_j.GetTemp() + node_1_i_j.GetTemp() + node_i_1_j.GetTemp() + node_i__1_j.GetTemp() + node_i_j_1.GetTemp()) / (step * step));
+					res += node_i_j.GetTemp() + h_t * (-4 * node_i_j.GetTemp() + node_1_i_j.GetTemp() + node_i_1_j.GetTemp() + node_i__1_j.GetTemp() + node_i_j_1.GetTemp()) / (step * step);
+					if (res > 200) {
+						res /= 1.5;
+					}
+					next_step_node.SetTemp(res);
 					break;
 				case 1:
-					if (node_i_j.GetMuX() == 1 and node_i_j.GetMuY() == 1) {
+					/*if (node_i_j.GetMuX() == 1 and node_i_j.GetMuY() == 1) {
 						next_step_node.SetTemp(100);
 						return next_step_node;
 					}
-					else {
-						if (temp_grid_[time_ - 1][y][x + 1].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuX() * node_i_j_1.GetTemp()) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+					else {*/
+						if (temp_grid_[time_ - 1][y][x + 1].GetBoundary() == 0 and temp_grid_[time_ - 1][y][x - 1].GetBoundary() == -1) {
+							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x + 1].GetTemp()) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+							
 						}
-						else if (temp_grid_[time_ - 1][y][x - 1].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + node_i_j.GetMuX() * node_i__1_j.GetTemp() + 100) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+						 else if (temp_grid_[time_ - 1][y][x - 1].GetBoundary() == 0 and temp_grid_[time_ - 1][y][x + 1].GetBoundary() == -1) {
+							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuX()) * node_i_j.GetTemp() + node_i_j.GetMuX() * temp_grid_[time_ - 1][y][x - 1].GetTemp() + 100) / (step * step * (node_i_j.GetMuX() * node_i_j.GetMuX() + node_i_j.GetMuX()));
+							//printf("!");
 						}
-						if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuY() * node_i_1_j.GetTemp()) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+						//else {
+						//	res += node_i_j.GetTemp() + h_t * (-2 * node_i_j.GetTemp() + temp_grid_[time_ - 1][y][x + 1].GetTemp() + temp_grid_[time_ - 1][y][x - 1].GetTemp()) / (step * step);
+						//}
+						if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0 and temp_grid_[time_ - 1][y - 1][x].GetBoundary() == -1) {
+							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + 100 + node_i_j.GetMuY() * temp_grid_[time_ - 1][y + 1][x].GetTemp()) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
 						}
 
-						else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
-							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * node_1_i_j.GetTemp() + 100) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+						 else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0 and temp_grid_[time_ - 1][y + 1][x].GetBoundary() == -1) {
+							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * temp_grid_[time_ - 1][y - 1][x].GetTemp() + 100) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+							//printf("!");
+						}
+						//else {
+						//	res += node_i_j.GetTemp() + h_t * (-2 * node_i_j.GetTemp() + temp_grid_[time_ - 1][y + 1][x].GetTemp() + temp_grid_[time_ - 1][y - 1][x].GetTemp()) / (step * step);
+						//}
+						if (res > 200) {
+							res /= 1.5;
 						}
 						next_step_node.SetTemp(res);
 						return next_step_node;
-					}
+					//}
 					
 					break;
 				case 2:
@@ -282,6 +328,9 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 
 						else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
 							res += node_i_j.GetTemp() + h_t * 2 * (-(1 + node_i_j.GetMuY()) * node_i_j.GetTemp() + node_i_j.GetMuY() * temp_grid_[time_ - 1][y - 1][x].GetTemp() + 200) / (step * step * (node_i_j.GetMuY() * node_i_j.GetMuY() + node_i_j.GetMuY()));
+						}
+						if (res > 200) {
+							res /= 1.5;
 						}
 						next_step_node.SetTemp(res);
 						return next_step_node;
@@ -305,6 +354,9 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 						else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
 							res += temp_grid_[time_ - 1][y - 1][x].GetTemp();
 						}
+						if (res > 200) {
+							res /= 1.5;
+						}
 						next_step_node.SetTemp(res);
 						return next_step_node;
 						//if(node_i_j)
@@ -323,6 +375,9 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 						}
 						else if (y == h_s - 1) {
 							res += temp_grid_[time_ - 1][y - 1][x].GetTemp() / (step * temp_grid_[time_ - 1][y - 1][x].GetMuY() + 1);
+						}
+						if (res > 200) {
+							res /= 1.5;
 						}
 						next_step_node.SetTemp(res);
 						return next_step_node;

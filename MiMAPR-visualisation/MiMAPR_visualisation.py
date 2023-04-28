@@ -1,3 +1,4 @@
+from asyncio.windows_events import NULL
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 import matplotlib.animation as animation
@@ -46,7 +47,7 @@ def main():
     step = int(input())
     h_s = 400//step
     w_s = 500//step
-    temp_grid = np.array([np.array([np.array([0 for k in range(w_s+1)]) for j in range(h_s+1)]) for i in range(1000)])
+    temp_grid = np.array([np.array([np.array([-100 for k in range(w_s+1)]) for j in range(h_s+1)]) for i in range(1000)])
     i = 0
     last_time = -1;
     for line in f:

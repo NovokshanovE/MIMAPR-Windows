@@ -45,6 +45,8 @@ int main()
 	
 	fin.close();
 	body->OutToFile();
+	body->PrintTempGrid(999);
+	body->PrintGrid(0);
 	//ArrayXXf
 	//int in_put;
 	//cin >> in_put;

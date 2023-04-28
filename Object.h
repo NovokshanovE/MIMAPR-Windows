@@ -37,7 +37,7 @@ public:
 	void OutToFile();
 	void CompletionGrid();
 	void SetBoundary(vector<int> boundary);
-	int BoundaryInit(double x, double y);
+	int BoundaryInit(double x, double y, bool);
 	bool InternalSet(double j, double i);
 	Point& PointOnNextStep(int x, int y, bool key, bool boundary);
 	void NextStep(bool key);
