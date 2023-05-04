@@ -65,8 +65,8 @@ void Object::PrintTempGrid(int k) {
 		for (int j = 0; j < w_s; j++)
 			if (temp_grid_[k][i][j].GetInternal()) {
 				int t = temp_grid_[k][i][j].GetTemp()/29;
-				//printf(" \033[9%dm#\033[0m", 7-t);
-				printf(" %03.f", temp_grid_[k][i][j].GetTemp());
+				printf(" \033[9%dm#\033[0m", 7-t);
+				//printf(" %03.f", temp_grid_[k][i][j].GetTemp());
 			}
 			else
 				printf(" ---");

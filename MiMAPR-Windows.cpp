@@ -35,7 +35,7 @@ int main()
 	fout.close();
 	body->PrintGrid(0);
 	for (int i = 1; i < 1000; i++) {
-		body->NextStep(false);
+		body->NextStep(true);
 		
 		//if (i % 10000 == 0) {
 		//	//body->PrintTempGrid(i);
