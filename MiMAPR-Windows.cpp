@@ -34,7 +34,7 @@ int main()
 	//body->PrintTempGrid(0);
 	fout.close();
 	body->PrintGrid(0);
-	for (int i = 1; i < 1000; i++) {
+	for (int i = 1; i < 100; i++) {
 		body->NextStep(true);
 		
 		//if (i % 10000 == 0) {
@@ -46,7 +46,7 @@ int main()
 	
 	fin.close();
 	body->OutToFile();
-	body->PrintTempGrid(999);
+	body->PrintTempGrid(99);
 	//body->PrintGrid(0);
 	//ArrayXXf
 	//int in_put;

@@ -69,7 +69,7 @@ void Object::PrintTempGrid(int k) {
 				//printf(" %03.f", temp_grid_[k][i][j].GetTemp());
 			}
 			else
-				printf(" ---");
+				printf(" -");
 	}
 }
 
