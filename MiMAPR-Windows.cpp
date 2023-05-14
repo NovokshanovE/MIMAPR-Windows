@@ -37,10 +37,10 @@ int main()
 	for (int i = 1; i < 1000; i++) {
 		body->NextStep(false);
 		
-		//if (i % 10000 == 0) {
-		//	//body->PrintTempGrid(i);
-		//	//body->PrintGrid(i);
-		//}
+		if (i % 10 == 0) {
+			body->PrintTempGrid(i);
+			//body->PrintGrid(i);
+		}
 		//body->PrintTempGrid(i);
 	}
 	

@@ -105,7 +105,7 @@ void Object::CompletionGrid() {
 			double muX = SetMuX(j, i, temp_grid_[0][i][j].GetBoundary()), muY = SetMuY(j, i, temp_grid_[0][i][j].GetBoundary());
 			vector<pair<int, int>> prov = { {0,1},{1,0},{0,-1},{-1,0} };
 			
-			if (muX < 0.0001 or muY < 0.0001) {
+			if (muX < 0.01 or muY < 0.01) {
 				temp_grid_[0][i][j].SetInternal(InternalSet(j, i));
 				temp_grid_[0][i][j].SetBoundary(-1);
 				for (int k = 0; k < 4; k++) {
@@ -379,14 +379,14 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 						else if (temp_grid_[time_ - 1][y][x - 1].GetBoundary() == 0) {
 							res += temp_grid_[time_ - 1][y][x - 1].GetTemp();
 						}
-						if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0) {
+						else if (temp_grid_[time_ - 1][y + 1][x].GetBoundary() == 0) {
 							res += temp_grid_[time_ - 1][y + 1][x].GetTemp();
 						}
 						
 						else if (temp_grid_[time_ - 1][y - 1][x].GetBoundary() == 0) {
 							res += temp_grid_[time_ - 1][y - 1][x].GetTemp();
 						}
-						
+						res = 0;
 						next_step_node.SetTemp(res);
 						return next_step_node;
 						//if(node_i_j)
@@ -432,7 +432,8 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 
 				case 3:
 					if (boundary) {
-						if (x == 0) {
+						next_step_node.SetTemp(0);
+						/*if (x == 0) {
 							next_step_node.SetTemp(temp_grid_[time_ - 1][y][x + 1].GetTemp());
 						}
 						else if (y == 0) {
@@ -443,7 +444,7 @@ Point& Object::PointOnNextStep(int x, int y, bool key, bool boundary) {
 						}
 						else if (y == h_s - 1) {
 							next_step_node.SetTemp(temp_grid_[time_ - 1][y - 1][x].GetTemp());
-						}
+						}*/
 						return next_step_node;
 						//if(node_i_j)
 					}
