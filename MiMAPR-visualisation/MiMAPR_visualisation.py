@@ -26,19 +26,20 @@ def CreateGif(data, step):
     # Begin plotting.
     cs = None
     tstart = time.time()
-    for i in range(1000):
+    #for i in range(1000):
         # If a line collection is already remove it before drawing.
 
-        if cs:
-            cs.remove()
+        ##if cs:
+            #cs.remove()
         # Generate data.
         #print(data[i])
-        cs = ax.contourf(xs, ys, data[i],cmap="bwr")
+        #plt.close()
+    cs = ax.contourf(xs, ys, data[999],cmap="bwr", levels=100, antialiased = True)
     # cs = ax.contourf(res, cmap ="Wistia")
-        #cbar = plt.colorbar(cs)
+    cbar = plt.colorbar(cs)
         # Plot the new wireframe and pause briefly before continuing.
         #wframe = ax.plot(xs, ys, data[i], rstride=2, cstride=2)
-        plt.pause(.001)
+        #plt.pause(.000001)
     plt.show()
     print('Average FPS: %f' % (100 / (time.time() - tstart)))
 

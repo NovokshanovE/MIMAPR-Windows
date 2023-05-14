@@ -14,7 +14,6 @@
 #include <fstream>
 using namespace Eigen;
 using namespace std;
-///usr/include/eigen3
 
 class Object {
 private:
@@ -27,9 +26,8 @@ private:
 	Hole* hole;
 	int step;
 	vector<int> boundary_;
-	//ArrayXXf grid;
 	vector< vector < vector <Point>> > temp_grid_;
-	vector< pair <char, int> > boundary_conditions_;
+	
 public:
 	Object(int v, double p1, double p2, int step, vector<int> boundary);
 	void PrintGrid(int k);
@@ -43,7 +41,4 @@ public:
 	void NextStep(bool key);
 	double SetMuX(int, int, int);
 	double SetMuY(int, int, int);
-	//void SetStep(int step);
-	//void CompletionTempGrid();
-
 };
